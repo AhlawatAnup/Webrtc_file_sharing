@@ -1,158 +1,250 @@
 const socket = io();
+
 let localStream;
 let remoteStream;
 let peerConnection;
-let userId;
 
-const webcamVideo = document.getElementById("webcamVideo");
-const remotecamVideo = document.getElementById("remotecamVideo");
-const webcamButton = document.getElementById("webcamButton");
-const callButton = document.getElementById("callButton");
-const answerButton = document.getElementById("answerButton");
-const hangupButton = document.getElementById("hangupButton");
-
-console.log("Welcome to Video Chat");
-
-const mediaConstraints = {
-  audio: true,
-  video: { width: 120, height: 120 },
-};
-
-const hangupButtonClickHandler = () => {
-  location.reload(); // Reload the page to hang up the call
-};
-
-const callButtonClickHandler = async () => {
-  // Setup media resources
-  localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-
-  // Display local stream in the webcam video element
-  webcamVideo.srcObject = localStream;
-
-  console.log("peer connnection is ", peerConnection);
-
-  //Track for local peer
-  localStream.getTracks().forEach((track) => {
-    console.log(peerConnection)
-    peerConnection.addTrack(track, localStream);
-    console.log("track added to peer connecton" , track)
-  });
-
-  peerConnection.ontrack = (e) => {
-    console.log("Ontrack event triggered:", e);
-    remotecamVideo.srcObject = remoteStream;
-    e.streams[0].getTracks().forEach((track) => {
-      remoteStream.addTrack(track);
-      console.log("Track added to remote stream:", track);
-    });
-  };
-};
-
-const answerButtonClickHandler = () => {
-
-  //remote peer connection
-  peerConnection.ontrack=(event) => {
-    console.log("Ontrack event triggered:", event);
-      remotecamVideo.srcObject = remoteStream;
-      event.streams[0].getTracks().forEach((track) => {
-      remoteStream.addTrack(track);
-      console.log("Track added to remote stream:", track);
-    });
-  };
-  
-  createPeerConnection()
-  callButtonClickHandler()
-};
-
-// Event listeners for buttons
-hangupButton.addEventListener("click", hangupButtonClickHandler);
-callButton.addEventListener("click", callButtonClickHandler);
-answerButton.addEventListener("click", answerButtonClickHandler);
-
-// Setting up the Peer connection
-socket.on("new_room", async (userId) => {
-  console.log("New user: ", userId);
-  generateOffer();
-});
+let currentCallId = null;
 
 const servers = {
   iceServers: [
     {
-      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
+      urls: [
+        "stun:stun1.l.google.com:19302",
+        "stun:stun2.l.google.com:19302",
+      ],
     },
   ],
 };
 
-const generateOffer = async () => {
+// ================= UI ELEMENTS =================
+
+const webcamVideo = document.getElementById("webcamVideo");
+const remoteVideo = document.getElementById("remoteVideo");
+
+const createCallButton = document.getElementById("createCallButton");
+const joinCallButton = document.getElementById("joinCallButton");
+
+const muteButton = document.getElementById("muteButton");
+const cameraButton = document.getElementById("cameraButton");
+const hangupButton = document.getElementById("hangupButton");
+
+const callInput = document.getElementById("callInput");
+
+const currentCallIdText = document.getElementById("currentCallId");
+const statusDiv = document.getElementById("status");
+
+const copyButton = document.getElementById("copyButton");
+
+// ================= MEDIA =================
+
+async function startLocalStream() {
+  localStream = await navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: true,
+  });
+
+  webcamVideo.srcObject = localStream;
+}
+
+// ================= PEER CONNECTION =================
+
+function createPeerConnection() {
+  peerConnection = new RTCPeerConnection(servers);
+
+  remoteStream = new MediaStream();
+
+  remoteVideo.srcObject = remoteStream;
+
+  // ADD LOCAL TRACKS
+  localStream.getTracks().forEach((track) => {
+    peerConnection.addTrack(track, localStream);
+  });
+
+  // RECEIVE REMOTE TRACKS
+  peerConnection.ontrack = (event) => {
+    event.streams[0].getTracks().forEach((track) => {
+      remoteStream.addTrack(track);
+    });
+  };
+
+  // SEND ICE CANDIDATES
+  peerConnection.onicecandidate = (event) => {
+    if (event.candidate) {
+      socket.emit("ice-candidate", {
+        callId: currentCallId,
+        candidate: event.candidate,
+      });
+    }
+  };
+
+  // CONNECTION STATUS
+  peerConnection.onconnectionstatechange = () => {
+    statusDiv.innerText =
+      "Connection: " + peerConnection.connectionState;
+  };
+}
+
+// ================= CREATE CALL =================
+
+createCallButton.addEventListener("click", async () => {
+  currentCallId =
+    callInput.value || Math.random().toString(36).substring(2, 8);
+
+  callInput.value = currentCallId;
+
+  currentCallIdText.innerText = currentCallId;
+
+  statusDiv.innerText = "Creating call...";
+
+  await startLocalStream();
+
+  socket.emit("join-room", currentCallId);
+});
+
+// ================= JOIN CALL =================
+
+joinCallButton.addEventListener("click", async () => {
+  currentCallId = callInput.value;
+
+  if (!currentCallId) {
+    alert("Please enter Call ID");
+    return;
+  }
+
+  currentCallIdText.innerText = currentCallId;
+
+  statusDiv.innerText = "Joining call...";
+
+  await startLocalStream();
+
+  socket.emit("join-room", currentCallId);
+});
+
+// ================= WHEN USER JOINS =================
+
+socket.on("user-joined", async () => {
+  statusDiv.innerText = "User joined. Creating offer...";
+
   createPeerConnection();
 
   const offer = await peerConnection.createOffer();
-  console.log("Created offer");
 
   await peerConnection.setLocalDescription(offer);
 
   socket.emit("offer", {
-    type: "offer",
-    sdp: offer,
+    callId: currentCallId,
+    offer,
   });
-};
+});
 
-const generateAnswer = async (offer) => {
+// ================= RECEIVE OFFER =================
+
+socket.on("offer", async (offer) => {
+  statusDiv.innerText = "Offer received";
+
   createPeerConnection();
-  await peerConnection.setRemoteDescription(offer.sdp);
-  console.log("remote description for peer 2 set");
+
+  await peerConnection.setRemoteDescription(
+    new RTCSessionDescription(offer)
+  );
 
   const answer = await peerConnection.createAnswer();
-  console.log("Created answer");
+
   await peerConnection.setLocalDescription(answer);
 
   socket.emit("answer", {
-    type: "answer",
-    sdp: answer,
+    callId: currentCallId,
+    answer,
   });
-};
+});
 
-const addAnswer = async (answer) => {
-  if (!peerConnection.currentRemoteDescription) {
-    await peerConnection.setRemoteDescription(answer.sdp);
-    console.log("Accepted answer");
+// ================= RECEIVE ANSWER =================
+
+socket.on("answer", async (answer) => {
+  statusDiv.innerText = "Call connected";
+
+  await peerConnection.setRemoteDescription(
+    new RTCSessionDescription(answer)
+  );
+});
+
+// ================= RECEIVE ICE CANDIDATE =================
+
+socket.on("ice-candidate", async (candidate) => {
+  try {
+    await peerConnection.addIceCandidate(
+      new RTCIceCandidate(candidate)
+    );
+  } catch (err) {
+    console.error("ICE Candidate Error", err);
   }
-};
-
-socket.on("offer", (data) => {
-  generateAnswer(data);
-  console.log("Offer listened");
 });
 
-socket.on("answer", (data) => {
-  addAnswer(data);
-  console.log("Answer listened");
+// ================= ROOM FULL =================
+
+socket.on("room-full", () => {
+  alert("Room is full");
+
+  statusDiv.innerText = "Room Full";
 });
 
-const createPeerConnection = () => {
-  peerConnection = new RTCPeerConnection(servers);
-  console.log("Peer connection created");
-  remoteStream = new MediaStream();
+// ================= COPY CALL ID =================
 
-  // Adding ice candidates
-  peerConnection.addEventListener("icecandidate", (e) => {
-    console.log("Inside Ice candidate event Listener", e);
-    if (e.candidate) {
-      socket.emit("new-ice-candidate", e.candidate);
-      console.log("Peer connection started");
-    } else {
-      console.log("NO Ice Candidate", e);
-    }
-  });
-};
+copyButton.addEventListener("click", async () => {
+  if (!currentCallId) return;
 
-socket.on("new-ice-candidate", (data) => {
-  const candidate = new RTCIceCandidate(data);
-  attachIceCandidate(candidate);
-  console.log("New ICE candidate received and added");
+  await navigator.clipboard.writeText(currentCallId);
+
+  alert("Call ID copied");
 });
 
-const attachIceCandidate = (candidate) => {
-  peerConnection.addIceCandidate(candidate);
-  console.log("Counterpart's ICE candidates added");
-};
+// ================= MUTE BUTTON =================
+
+let isMuted = false;
+
+muteButton.addEventListener("click", () => {
+  isMuted = !isMuted;
+
+  localStream.getAudioTracks()[0].enabled = !isMuted;
+
+  muteButton.innerText = isMuted
+    ? "🔇 Unmute"
+    : "🎤 Mute";
+});
+
+// ================= CAMERA BUTTON =================
+
+let cameraOff = false;
+
+cameraButton.addEventListener("click", () => {
+  cameraOff = !cameraOff;
+
+  localStream.getVideoTracks()[0].enabled = !cameraOff;
+
+  cameraButton.innerText = cameraOff
+    ? "📷 Camera On"
+    : "📷 Camera Off";
+});
+
+// ================= HANGUP =================
+
+hangupButton.addEventListener("click", () => {
+  // CLOSE PEER CONNECTION
+  if (peerConnection) {
+    peerConnection.close();
+  }
+
+  // STOP LOCAL TRACKS
+  if (localStream) {
+    localStream.getTracks().forEach((track) => track.stop());
+  }
+
+  // CLEAR VIDEOS
+  webcamVideo.srcObject = null;
+  remoteVideo.srcObject = null;
+
+  statusDiv.innerText = "Call ended";
+
+  location.reload();
+});

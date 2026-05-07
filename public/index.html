@@ -1,27 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Chat</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" href="./css/style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Video Calling App</title>
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="./css/style.css">
+
+
 </head>
+
 <body>
-    <h1>Video Chat</h1>
-    <video id="webcamVideo" autoplay playsinline></video>
-    <video id="remoteVideo" autoplay playsinline></video>
-   
-    
-    <!-- <button id ="webcamButton">Start webcam</button>  -->
-    <button id ="callButton" >Create Call(Offer)</button>
-    
-    <button id = "answerButton" >Answer</button> 
 
-    <button id ="hangupButton" >Hang Up</button>
+  <div class="app">
 
+    <!-- HEADER -->
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="./js/index.js"></script>
+    <div class="topbar">
+
+      <div class="logo">
+        🎥 Video Chat
+      </div>
+
+      <div class="call-info">
+        <div class="call-id-box">
+          Call ID:
+          <span id="currentCallId">Not Connected</span>
+        </div>
+
+        <button id="copyButton" class="secondary">
+          Copy ID
+        </button>
+      </div>
+
+    </div>
+
+    <!-- VIDEO AREA -->
+
+    <div class="video-container">
+
+      <div class="status" id="status">
+        Waiting to join...
+      </div>
+
+      <video id="remoteVideo" autoplay playsinline></video>
+
+      <video
+        id="webcamVideo"
+        autoplay
+        playsinline
+        muted
+      ></video>
+
+    </div>
+
+    <!-- CONTROLS -->
+
+    <div class="controls">
+
+      <div class="join-section">
+        <input
+          type="text"
+          id="callInput"
+          placeholder="Enter Call ID"
+        />
+
+        <button id="createCallButton" class="primary">
+          Create Call
+        </button>
+
+        <button id="joinCallButton" class="success">
+          Join Call
+        </button>
+      </div>
+
+      <button id="muteButton" class="secondary">
+        🎤 Mute
+      </button>
+
+      <button id="cameraButton" class="secondary">
+        📷 Camera Off
+      </button>
+
+      <button id="hangupButton" class="danger">
+        📞 End Call
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- SOCKET.IO -->
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- YOUR JS -->
+
+  <script src="./js/index.js"></script>
+
 </body>
 </html>

@@ -1,0 +1,184 @@
+* {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0f172a;
+      color: white;
+      overflow: hidden;
+    }
+
+    .app {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+
+    .topbar {
+      height: 70px;
+      background: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .call-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .call-id-box {
+      background: #1e293b;
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    /* MAIN VIDEO AREA */
+
+    .video-container {
+      flex: 1;
+      position: relative;
+      background: black;
+      overflow: hidden;
+    }
+
+    #remoteVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: black;
+    }
+
+    #webcamVideo {
+      position: absolute;
+      width: 280px;
+      height: 180px;
+      object-fit: cover;
+      bottom: 20px;
+      right: 20px;
+      border-radius: 15px;
+      border: 2px solid white;
+      background: black;
+      z-index: 10;
+    }
+
+    /* CONTROLS */
+
+    .controls {
+      height: 100px;
+      background: #111827;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      border-top: 1px solid #1f2937;
+    }
+
+    button {
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 20px;
+      border-radius: 50px;
+      font-size: 15px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    .primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .secondary {
+      background: #374151;
+      color: white;
+    }
+
+    .danger {
+      background: #dc2626;
+      color: white;
+    }
+
+    .success {
+      background: #16a34a;
+      color: white;
+    }
+
+    .join-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input {
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      width: 220px;
+      background: #1e293b;
+      color: white;
+      font-size: 15px;
+    }
+
+    .status {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.5);
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 20;
+    }
+
+    @media(max-width: 768px) {
+
+      #webcamVideo {
+        width: 120px;
+        height: 170px;
+        bottom: 120px;
+      }
+
+      .controls {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 15px;
+      }
+
+      .join-section {
+        width: 100%;
+        justify-content: center;
+      }
+
+      input {
+        width: 160px;
+      }
+
+      .topbar {
+        flex-direction: column;
+        height: auto;
+        gap: 10px;
+        padding: 10px;
+      }
+    }
+

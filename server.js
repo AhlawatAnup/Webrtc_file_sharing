@@ -2,58 +2,78 @@ const express = require("express");
 const app = express();
 
 const path = require("path");
-
-const fs = require("fs");
-
 const http = require("http");
+
 const server = http.createServer(app);
 
 const socketio = require("socket.io");
-const io = socketio(server);
+
+const io = socketio(server, {
+  cors: {
+    origin: "*",
+  },
+});
 
 app.use(express.static(path.join(process.cwd(), "public")));
+
 const port = process.env.PORT || 5000;
 
+// ================= SOCKET.IO =================
+
 io.on("connection", (socket) => {
-  socket.emit("message", "Welcome!");
+  console.log(`User connected: ${socket.id}`);
 
-  // Creating a room
-  let userId = socket.id;
-  console.log(`User: ${userId} connected`); 
+  // JOIN ROOM
+  socket.on("join-room", (callId) => {
+    const room = io.sockets.adapter.rooms.get(callId);
 
-  socket.join("new_room");
-  socket.to("new_room").emit("new_room", userId);
-  console.log("User entered a new room");
+    const numberOfUsers = room ? room.size : 0;
 
-  // LISTENING OFFER
-  socket.on("offer", (data) => {
-    console.log("Offer from P1 received: ", data.sdp);
-    socket.to("new_room").emit("offer", data);
+    // Only allow 2 users
+    if (numberOfUsers >= 2) {
+      socket.emit("room-full");
+      return;
+    }
+
+    socket.join(callId);
+
+    console.log(`${socket.id} joined room ${callId}`);
+
+    // Notify others
+    socket.to(callId).emit("user-joined", socket.id);
+
+    socket.emit("joined-successfully", callId);
   });
 
-  // LISTENING ANSWER
-  socket.on("answer", (data) => {
-    console.log("Answer from P2 received: ", data.sdp);
-    socket.to("new_room").emit("answer", data);
+  // OFFER
+  socket.on("offer", ({ callId, offer }) => {
+    socket.to(callId).emit("offer", offer);
   });
 
-  // ADDING THE ICE CANDIDATES TO ROOM
-  socket.on("new-ice-candidate", (data) => {
-    socket.to("new_room").emit("new-ice-candidate", data);
+  // ANSWER
+  socket.on("answer", ({ callId, answer }) => {
+    socket.to(callId).emit("answer", answer);
   });
 
+  // ICE CANDIDATE
+  socket.on("ice-candidate", ({ callId, candidate }) => {
+    socket.to(callId).emit("ice-candidate", candidate);
+  });
+
+  // DISCONNECT
   socket.on("disconnect", () => {
-    console.log(`User: ${socket.id} disconnected`);
+    console.log(`Disconnected: ${socket.id}`);
   });
 });
 
-// Setting server
-server.listen(port ,"0.0.0.0",() => {
-  console.log("Server listening on the port: ", port);
-});
+// ================= ROUTES =================
 
-// Serve the HTML file
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
-  
+
+// ================= SERVER =================
+
+server.listen(port, "0.0.0.0", () => {
+  console.log(`Server running on port ${port}`);
+});
