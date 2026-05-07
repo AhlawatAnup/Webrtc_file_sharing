@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Chat</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+    <h1>Video Chat</h1>
+    <video id="webcamVideo" autoplay playsinline></video>
+    <video id="remoteVideo" autoplay playsinline></video>
+   
+    
+    <!-- <button id ="webcamButton">Start webcam</button>  -->
+    <button id ="callButton" >Create Call(Offer)</button>
+    
+    <button id = "answerButton" >Answer</button> 
+
+    <button id ="hangupButton" >Hang Up</button>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./js/index.js"></script>
+</body>
+</html>
