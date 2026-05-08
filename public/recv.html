@@ -9,7 +9,13 @@
   </head>
   <body>
     <span>Receiver</span>
-    <video controls autoplay style="width: 500px; height: auto"></video>
+    <video
+      controls
+      autoplay
+      muted
+      playsinline
+      style="width: 500px; height: auto"
+    ></video>
 
     <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="./js/recv.js"></script>
