@@ -1,124 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ViewIt — Video Calling</title>
-<link rel="stylesheet" href="./css/style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
-</head>
-<body>
-
-  <div class="ambient ambient-1"></div>
-  <div class="ambient ambient-2"></div>
-
-  <div class="app">
-
-    <!-- ── TOPBAR ── -->
-    <header class="topbar">
-      <div class="logo">
-        <div class="logo-icon">⬡</div>
-        <span class="logo-text" style="font-family:'Syne',sans-serif">ViewIt<span class="logo-dot"></span></span>
-      </div>
-
-      <div class="topbar-right">
-        <div class="call-badge" id="callBadge">
-          <span class="badge-dot"></span>
-          <span id="currentCallId" style="font-family:'DM Mono',monospace;font-size:12px">No Active Call</span>
-        </div>
-        <button class="btn-icon" id="copyButton" title="Copy Call ID" style="font-size:13px">⧉</button>
-      </div>
-    </header>
-
-    <!-- ── VIDEO AREA ── -->
-    <main class="video-container">
-
-      <!-- ambient grid already via ::before -->
-
-      <!-- remote video -->
-      <video id="remoteVideo" autoplay playsinline></video>
-
-      <!-- waiting overlay -->
-      <div class="waiting-state" id="waitingState">
-        <div class="waiting-ring">
-          <svg viewBox="0 0 100 100" width="100" height="100">
-            <circle cx="50" cy="50" r="44"
-              fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="1.5"/>
-            <circle cx="50" cy="50" r="44"
-              fill="none" stroke="var(--accent)" stroke-width="1.5"
-              stroke-dasharray="40 237"
-              stroke-linecap="round"/>
-          </svg>
-          <div class="waiting-ring-inner">📡</div>
-        </div>
-        <div class="waiting-label">Awaiting Connection</div>
-      </div>
-
-      <!-- status chip -->
-      <div class="status-chip" id="status">
-        <span class="status-indicator"></span>
-        <span id="statusText">Idle</span>
-      </div>
-
-      <!-- call timer -->
-      <div class="call-timer" id="callTimer">00:00</div>
-
-      <!-- local PiP -->
-      <div class="pip-wrapper" id="pipWrapper">
-        <div class="pip-frame">
-          <video id="webcamVideo" autoplay playsinline muted></video>
-          <div class="pip-label">YOU</div>
-        </div>
-      </div>
-
-    </main>
-
-    <!-- ── CONTROLS ── -->
-    <footer class="controls">
-
-      <!-- LEFT: Join controls -->
-      <div class="controls-left">
-        <div class="input-wrap">
-          <span class="input-icon">🔑</span>
-          <input type="text" id="callInput" placeholder="Paste Call ID…" autocomplete="off" spellcheck="false" />
-        </div>
-        <button class="btn-cta btn-create" id="createCallButton">
-          <span>+</span>
-          <span>New Call</span>
-        </button>
-        <button class="btn-cta btn-join" id="joinCallButton">
-          <span>↗</span>
-          <span>Join</span>
-        </button>
-      </div>
-
-      <!-- CENTER: Call controls -->
-      <div class="controls-center">
-        <button class="ctrl-btn ctrl-btn-default" id="muteButton" data-tooltip="Mute mic">🎤</button>
-        <button class="ctrl-btn ctrl-btn-end" id="hangupButton" data-tooltip="End call">📞</button>
-        <button class="ctrl-btn ctrl-btn-default" id="cameraButton" data-tooltip="Toggle camera">📷</button>
-      </div>
-
-      <!-- RIGHT: Quality indicator -->
-      <div class="controls-right">
-        <div class="signal-bars" id="signalBars">
-          <span></span><span></span><span></span><span></span>
-        </div>
-      </div>
-
-    </footer>
-  </div>
-
-  <!-- TOAST -->
-  <div class="toast" id="toast">
-    <span class="toast-icon" id="toastIcon">✓</span>
-    <span id="toastMsg">Copied!</span>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="./js/index.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ViewIt — Video Calling</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div>Demo</div>
+  </body>
 </html>
